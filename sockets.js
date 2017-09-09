@@ -55,7 +55,6 @@ var passMacs = function (data) {
             createdAt: element.timestamp
         }
         db.Routers.findOne({
-            sensorID: mac.sensorID,
             mac: mac.mac,
         }, function (err, doc) {
             if (doc == null) {
@@ -188,7 +187,7 @@ function sockets() {
                             },
                             {
                                 $set: {
-                                    ssid: mac.rssi,
+                                    ssid: mac.ssid,
                                     rssi: mac.rssi,
                                     timestamp: mac.timestamp
                                 }

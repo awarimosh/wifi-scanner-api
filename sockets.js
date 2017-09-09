@@ -15,7 +15,7 @@ var client1 = new net.Socket();
 var clientStatus = false;
 var client1Status = false;
 var timeout, timeout1;
-var today = new Date().setHours(0,0,0,0) / 1000;
+var today = new Date().setHours(0, 0, 0, 0) / 1000;
 
 var clientConnect = function () {
     if (!clientStatus) {
@@ -55,35 +55,39 @@ var passMacs = function (data) {
             createdAt: element.timestamp
         }
         db.Macs.findOne({
-            sensorID: sensorID,
-            mac: element.mac,
+            sensorID: mac.sensorID,
+            mac: mac.mac,
             timestamp: {
                 $gte: today
             }
         }, function (err, doc) {
             if (doc != null) {
-                db.Macs.findAndModify({
-                    query: {
-                        sensorID: sensorID,
-                        mac: element.mac
-                    },
-                    update: {
-                        $set: {
-                            rssi: element.rssi,
-                            timestamp: element.timestamp
+                db.Macs.update(
+                    {
+                        sensorID: mac.sensorID,
+                        mac: mac.mac,
+                        timestamp: {
+                            $gte: today
                         }
                     },
-                    new: true
-                }, function (err, doc) {
-                    console.log('updated doc', doc);
-                })
+                    {
+                        $set: {
+                            rssi: mac.rssi,
+                            timestamp: mac.timestamp
+                        }
+                    },
+                    {
+                        upsert: true,
+                        multi: true
+                    }
+                )
+                console.log("Updated Entry " + mac.sensorID + " mac: " + mac.mac);
             }
             else {
                 db.Macs.save(mac, function (err, res) {
                     if (err)
                         console.log('err', err);
-
-                    console.log('created doc', mac);
+                    console.log("Created Entry " + mac.sensorID + " mac: " + mac.mac);
                 });
             }
         })
@@ -103,7 +107,7 @@ function sockets() {
     client1Connect();
 
     client.on('data', function (data) {
-        today = new Date().setHours(0,0,0,0) / 1000;
+        today = new Date().setHours(0, 0, 0, 0) / 1000;
         entry = JSON.parse(data);
         entry.dateTime = Date.now();
         db.Entries.save(entry, function (err, entry) {
@@ -115,7 +119,7 @@ function sockets() {
     });
 
     client1.on('data', function (data) {
-        today = new Date().setHours(0,0,0,0) / 1000;
+        today = new Date().setHours(0, 0, 0, 0) / 1000;
         entry = JSON.parse(data);
         entry.dateTime = Date.now();
         db.Entries.save(entry, function (err, entry) {

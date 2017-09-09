@@ -132,14 +132,13 @@ function sockets() {
                         }
                         db.Routers.update(
                             {
-                                sensorID: mac.sensorID,
-                                mac: mac.mac,
-                                ssid: mac.ssid
+                                mac: mac.mac
                             },
                             {
                                 $set: {
                                     rssi: mac.rssi,
-                                    timestamp: mac.timestamp
+                                    timestamp: mac.timestamp,
+                                    ssid: mac.ssid
                                 }
                             },
                             {
@@ -164,7 +163,6 @@ function sockets() {
         });
     });
 
-
     client1.on('data', function (data) {
         today = new Date().setHours(0, 0, 0, 0) / 1000;
         entry = JSON.parse(data);
@@ -178,7 +176,7 @@ function sockets() {
                 if (entry.ssid != undefined && entry.ssid.length > 0) {
                     entry.ssid.forEach(function (element, index) {
                         var mac = {
-                            sensorID: sensorID,
+                            ssid: entry.sensorID,
                             mac: element.mac,
                             rssi: element.rssi,
                             timestamp: element.timestamp,
@@ -186,11 +184,11 @@ function sockets() {
                         }
                         db.Routers.update(
                             {
-                                sensorID: mac.sensorID,
                                 mac: mac.mac
                             },
                             {
                                 $set: {
+                                    ssid: mac.rssi,
                                     rssi: mac.rssi,
                                     timestamp: mac.timestamp
                                 }

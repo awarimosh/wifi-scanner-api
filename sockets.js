@@ -45,6 +45,7 @@ var client1Connect = function () {
 };
 
 var passMacs = function (data) {
+    today = new Date().setHours(0, 0, 0, 0) / 1000;
     var sensorID = data.sensorid;
     data.macs.forEach(function (element) {
         db.Routers.findOne({
@@ -78,13 +79,13 @@ var passMacs = function (data) {
                                 multi: true
                             }
                         )
-                        console.log("Updated Entry " , element);
+                        console.log("Updated Entry ", element.mac);
                     }
                     else {
                         db.Macs.save(element, function (err, res) {
                             if (err)
                                 console.log('err', err);
-                            console.log("Created Entry " , element);
+                            console.log("Created Entry ", element.mac);
                         });
                     }
                 })
@@ -195,23 +196,11 @@ function sockets() {
     });
 
     client.on('error', function (e) {
-        if (e.code == 'ECONNREFUSED' && clientStatus) {
-            client.destroy();
-            clearTimeout(timeout);
-            timeout = setTimeout(clientConnect, 10000);
-            clientStatus = false;
-            console.log('Timeout for 4 seconds before trying port:' + PORT + ' again');
-        }
+        console.log(PORT, e.code);
     });
 
     client1.on('error', function (e) {
-        if (e.code == 'ECONNREFUSED' && client1Status) {
-            client1.destroy();
-            clearTimeout(timeout1);
-            timeout1 = setTimeout(client1Connect, 10000);
-            client1Status = false;
-            console.log('Timeout for 4 seconds before trying port:' + PORT + ' again');
-        }
+        console.log(PORT1, e.code);
     });
 
     // Add a 'close' event handler for the client socket
@@ -219,7 +208,7 @@ function sockets() {
         console.log('Connection closed', PORT);
         client.destroy();
         clearTimeout(timeout);
-        timeout = setTimeout(clientConnect, 12000);
+        timeout = setTimeout(clientConnect, 10000);
         clientStatus = false;
     });
 
@@ -227,7 +216,7 @@ function sockets() {
         console.log('Connection closed', PORT1);
         client1.destroy();
         clearTimeout(timeout1);
-        timeout1 = setTimeout(client1Connect, 12000);
+        timeout1 = setTimeout(client1Connect, 10000);
         client1Status = false;
     });
 }

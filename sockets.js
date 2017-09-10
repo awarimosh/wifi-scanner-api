@@ -46,21 +46,14 @@ var client1Connect = function () {
 
 var passMacs = function (data) {
     var sensorID = data.sensorid;
-    data.data.forEach(function (element) {
-        var mac = {
-            sensorID: sensorID,
-            mac: element.mac,
-            rssi: element.rssi,
-            timestamp: element.timestamp,
-            createdAt: element.timestamp
-        }
+    data.macs.forEach(function (element) {
         db.Routers.findOne({
-            mac: mac.mac,
+            mac: element.mac,
         }, function (err, doc) {
             if (doc == null) {
                 db.Macs.findOne({
-                    sensorID: mac.sensorID,
-                    mac: mac.mac,
+                    sensorID: element.sensorID,
+                    mac: element.mac,
                     timestamp: {
                         $gte: today
                     }
@@ -68,16 +61,16 @@ var passMacs = function (data) {
                     if (doc != null) {
                         db.Macs.update(
                             {
-                                sensorID: mac.sensorID,
-                                mac: mac.mac,
+                                sensorID: element.sensorID,
+                                mac: element.mac,
                                 timestamp: {
                                     $gte: today
                                 }
                             },
                             {
                                 $set: {
-                                    rssi: mac.rssi,
-                                    timestamp: mac.timestamp
+                                    rssi: element.rssi,
+                                    timestamp: element.timestamp
                                 }
                             },
                             {
@@ -85,19 +78,102 @@ var passMacs = function (data) {
                                 multi: true
                             }
                         )
-                        // console.log("Updated Entry " + mac.sensorID + " mac: " + mac.mac);
+                        console.log("Updated Entry " , element);
                     }
                     else {
-                        db.Macs.save(mac, function (err, res) {
+                        db.Macs.save(element, function (err, res) {
                             if (err)
                                 console.log('err', err);
-                            // console.log("Created Entry " + mac.sensorID + " mac: " + mac.mac);
+                            console.log("Created Entry " , element);
                         });
                     }
                 })
             }
         })
     }, this);
+}
+
+var passData = function (data) {
+    today = new Date().setHours(0, 0, 0, 0) / 1000;
+    entry = JSON.parse(data);
+    entry.dateTime = Date.now();
+    db.Entries.save(entry, function (err, entry) {
+        if (err)
+            console.log('err', err);
+
+        var pass = new Promise((resolve, reject) => {
+            var sensorID = entry.sensorid;
+            if (entry.ssid != undefined && entry.ssid.length > 0) {
+                entry.ssid.forEach(function (element, index) {
+                    var mac = {
+                        ssid: element.ssid,
+                        mac: element.mac,
+                        rssi: element.rssi,
+                        timestamp: element.timestamp,
+                        createdAt: element.timestamp
+                    }
+                    db.Routers.update(
+                        {
+                            mac: mac.mac
+                        },
+                        {
+                            $set: {
+                                rssi: mac.rssi,
+                                timestamp: mac.timestamp,
+                                ssid: mac.ssid
+                            }
+                        },
+                        {
+                            upsert: true,
+                            multi: true
+                        }
+                    )
+                    if (index >= entry.ssid.length - 1) {
+                        resolve(entry);
+                    }
+
+                }, this);
+            }
+            else {
+                resolve(entry);
+            }
+        }).then((out1) => {
+            return new Promise((resolve, reject) => {
+                var macs = [];
+                var sensorID = out1.sensorid;
+                var out = {
+                    sensorID: sensorID,
+                    macs: ""
+                }
+                out1.data.forEach(function (element, index) {
+                    var mac = {
+                        sensorID: sensorID,
+                        mac: element.mac,
+                        rssi: element.rssi,
+                        timestamp: element.timestamp,
+                        createdAt: element.timestamp
+                    }
+                    db.Macs.findOne({
+                        mac: mac.mac,
+                    }, function (err, doc) {
+                        if (doc == null) {
+                            mac.unique = true;
+                        }
+                        else {
+                            mac.unique = false;
+                        }
+                        macs.push(mac);
+                        if (index >= out1.data.length - 1) {
+                            out.macs = macs;
+                            resolve(out);
+                        }
+                    })
+                }, this);
+            });
+        }).then((out2) => {
+            passMacs(out2)
+        })
+    });
 }
 
 function timeConverter(timestamp) {
@@ -111,107 +187,11 @@ function sockets() {
     client1Connect();
 
     client.on('data', function (data) {
-        today = new Date().setHours(0, 0, 0, 0) / 1000;
-        entry = JSON.parse(data);
-        entry.dateTime = Date.now();
-        db.Entries.save(entry, function (err, entry) {
-            if (err)
-                console.log('err', err);
-
-            var pass = new Promise((resolve, reject) => {
-                var sensorID = entry.sensorid;
-                if (entry.ssid != undefined && entry.ssid.length > 0) {
-                    entry.ssid.forEach(function (element, index) {
-                        var mac = {
-                            ssid: element.ssid,
-                            mac: element.mac,
-                            rssi: element.rssi,
-                            timestamp: element.timestamp,
-                            createdAt: element.timestamp
-                        }
-                        db.Routers.update(
-                            {
-                                mac: mac.mac
-                            },
-                            {
-                                $set: {
-                                    rssi: mac.rssi,
-                                    timestamp: mac.timestamp,
-                                    ssid: mac.ssid
-                                }
-                            },
-                            {
-                                upsert: true,
-                                multi: true
-                            }
-                        )
-                        if (index >= entry.ssid.length - 1) {
-                            resolve(entry);
-                        }
-
-                    }, this);
-                }
-                else {
-                    resolve(entry);
-                }
-            })
-
-            pass.then((data) => {
-                passMacs(data)
-            })
-        });
+        passData(data);
     });
 
     client1.on('data', function (data) {
-        today = new Date().setHours(0, 0, 0, 0) / 1000;
-        entry = JSON.parse(data);
-        entry.dateTime = Date.now();
-        db.Entries.save(entry, function (err, entry) {
-            if (err)
-                console.log('err', err);
-
-            var pass = new Promise((resolve, reject) => {
-                var sensorID = data.sensorid;
-                if (entry.ssid != undefined && entry.ssid.length > 0) {
-                    entry.ssid.forEach(function (element, index) {
-                        var mac = {
-                            ssid: entry.sensorID,
-                            mac: element.mac,
-                            rssi: element.rssi,
-                            timestamp: element.timestamp,
-                            createdAt: element.timestamp
-                        }
-                        db.Routers.update(
-                            {
-                                mac: mac.mac
-                            },
-                            {
-                                $set: {
-                                    ssid: mac.ssid,
-                                    rssi: mac.rssi,
-                                    timestamp: mac.timestamp
-                                }
-                            },
-                            {
-                                upsert: true,
-                                multi: true
-                            }
-                        )
-                        if (index >= entry.ssid.length - 1) {
-                            resolve(entry);
-                        }
-
-                    }, this);
-                }
-                else {
-                    resolve(entry);
-                }
-            })
-
-            pass.then((data) => {
-                passMacs(data)
-            })
-        });
+        passData(data);
     });
 
     client.on('error', function (e) {

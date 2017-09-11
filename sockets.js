@@ -9,7 +9,9 @@ var HOST2 = '175.138.59.232';
 var PORT1 = 21471;
 var PORT = 21470;
 
-var client = client1 = client2 = new net.Socket();
+var client = new net.Socket();
+var client1 = new net.Socket();
+var client2 = new net.Socket();
 
 var clientStatus = client1Status = client2Status = false;
 

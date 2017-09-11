@@ -4,17 +4,16 @@ var db = mongojs('mongodb://moshood:mosh1234@ds053972.mlab.com:53972/suretouch',
 var entry = {};
 
 var HOST = '61.6.23.70';
-//var HOST = '175.144.126.54';
+var HOST2 = '175.138.59.232';
 
 var PORT1 = 21471;
 var PORT = 21470;
 
-var client = new net.Socket();
-var client1 = new net.Socket();
+var client = client1 = client2 = new net.Socket();
 
-var clientStatus = false;
-var client1Status = false;
-var timeout, timeout1;
+var clientStatus = client1Status = client2Status = false;
+
+var timeout, timeout1, timeout2;
 var today = new Date().setHours(0, 0, 0, 0) / 1000;
 
 var clientConnect = function () {
@@ -26,7 +25,7 @@ var clientConnect = function () {
 
     }
     else {
-        console.log("Refused Connection at ", PORT)
+        console.log(">>>Refused Connection at ", PORT)
     }
 
 };
@@ -39,7 +38,20 @@ var client1Connect = function () {
         });
     }
     else {
-        console.log("Refused Connection at ", PORT1)
+        console.log(">>>Refused Connection at ", PORT1)
+    }
+
+};
+
+var client2Connect = function () {
+    if (!client2Status) {
+        client2.connect(PORT, HOST2, client1Status = function () {
+            console.log('CONNECTED TO: ' + HOST2 + ':' + PORT);
+            return true;
+        });
+    }
+    else {
+        console.log(">>>Refused Connection at ", PORT)
     }
 
 };
@@ -187,11 +199,17 @@ function sockets() {
 
     client1Connect();
 
+    client2Connect();
+
     client.on('data', function (data) {
         passData(data);
     });
 
     client1.on('data', function (data) {
+        passData(data);
+    });
+
+    client2.on('data', function (data) {
         passData(data);
     });
 
@@ -203,9 +221,13 @@ function sockets() {
         console.log(PORT1, e.code);
     });
 
+    client2.on('error', function (e) {
+        console.log(PORT, e.code);
+    });
+
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
-        console.log('Connection closed', PORT);
+        console.log('Connection closed',HOST +":"+  PORT);
         client.destroy();
         clearTimeout(timeout);
         timeout = setTimeout(clientConnect, 10000);
@@ -213,11 +235,19 @@ function sockets() {
     });
 
     client1.on('close', function () {
-        console.log('Connection closed', PORT1);
+        console.log('Connection closed',HOST +":"+ PORT1);
         client1.destroy();
         clearTimeout(timeout1);
         timeout1 = setTimeout(client1Connect, 10000);
         client1Status = false;
+    });
+
+    client2.on('close', function () {
+        console.log('Connection closed',HOST2 +":"+ PORT);
+        client2.destroy();
+        clearTimeout(timeout2);
+        timeout2 = setTimeout(client2Connect, 10000);
+        client2Status = false;
     });
 }
 

@@ -201,7 +201,7 @@ function sockets() {
 
     client1Connect();
 
-    client2Connect();
+    // client2Connect();
 
     client.on('data', function (data) {
         passData(data);
@@ -211,9 +211,9 @@ function sockets() {
         passData(data);
     });
 
-    client2.on('data', function (data) {
-        passData(data);
-    });
+    // client2.on('data', function (data) {
+    //     passData(data);
+    // });
 
     client.on('error', function (e) {
         console.log(PORT, e.code);
@@ -223,16 +223,16 @@ function sockets() {
         console.log(PORT1, e.code);
     });
 
-    client2.on('error', function (e) {
-        console.log(PORT, e.code);
-    });
+    // client2.on('error', function (e) {
+    //     console.log(PORT, e.code);
+    // });
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
         console.log('Connection closed',HOST +":"+  PORT);
         client.destroy();
         clearTimeout(timeout);
-        timeout = setTimeout(clientConnect, 10000);
+        timeout = setTimeout(clientConnect, 12000);
         clientStatus = false;
     });
 
@@ -240,17 +240,17 @@ function sockets() {
         console.log('Connection closed',HOST +":"+ PORT1);
         client1.destroy();
         clearTimeout(timeout1);
-        timeout1 = setTimeout(client1Connect, 10000);
+        timeout1 = setTimeout(client1Connect, 12000);
         client1Status = false;
     });
 
-    client2.on('close', function () {
-        console.log('Connection closed',HOST2 +":"+ PORT);
-        client2.destroy();
-        clearTimeout(timeout2);
-        timeout2 = setTimeout(client2Connect, 10000);
-        client2Status = false;
-    });
+    // client2.on('close', function () {
+    //     console.log('Connection closed',HOST2 +":"+ PORT);
+    //     client2.destroy();
+    //     clearTimeout(timeout2);
+    //     timeout2 = setTimeout(client2Connect, 10000);
+    //     client2Status = false;
+    // });
 }
 
 module.exports = sockets;

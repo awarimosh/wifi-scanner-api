@@ -93,13 +93,13 @@ var passMacs = function (data) {
                                 multi: true
                             }
                         )
-                        console.log("Updated Entry ", element.mac);
+                        console.log("Updated Entry @" + Date.now().toLocaleString, element.mac);
                     }
                     else {
                         db.Macs.save(element, function (err, res) {
                             if (err)
                                 console.log('err', err);
-                            console.log("Created Entry ", element.mac);
+                            console.log("Created Entry @"+ Date.now().toLocaleString, element.mac);
                         });
                     }
                 })

@@ -21,13 +21,13 @@ var today = new Date().setHours(0, 0, 0, 0) / 1000;
 var clientConnect = function () {
     if (!clientStatus) {
         client.connect(PORT, HOST, clientStatus = function () {
-            console.log('CONNECTED TO: ' + HOST + ':' + PORT);
+            console.log('CONNECTED TO: ' + HOST + ':' + PORT, new Date().toLocaleString());
             return true
         });
 
     }
     else {
-        console.log(">>>Refused Connection at ", PORT)
+        console.log(">>>Refused Connection at " + PORT, new Date().toLocaleString())
     }
 
 };
@@ -35,12 +35,12 @@ var clientConnect = function () {
 var client1Connect = function () {
     if (!client1Status) {
         client1.connect(PORT1, HOST, client1Status = function () {
-            console.log('CONNECTED TO: ' + HOST + ':' + PORT1);
+            console.log('CONNECTED TO: ' + HOST + ':' + PORT1, new Date().toLocaleString());
             return true;
         });
     }
     else {
-        console.log(">>>Refused Connection at ", PORT1)
+        console.log(">>>Refused Connection at "+ PORT1, new Date().toLocaleString())
     }
 
 };
@@ -48,18 +48,19 @@ var client1Connect = function () {
 var client2Connect = function () {
     if (!client2Status) {
         client2.connect(PORT, HOST2, client1Status = function () {
-            console.log('CONNECTED TO: ' + HOST2 + ':' + PORT);
+            console.log('CONNECTED TO: ' + HOST2 + ':' + PORT, new Date().toLocaleString());
             return true;
         });
     }
     else {
-        console.log(">>>Refused Connection at ", PORT)
+        console.log(">>>Refused Connection at "+ PORT, new Date().toLocaleString())
     }
 
 };
 
 var passMacs = function (data) {
     today = new Date().setHours(0, 0, 0, 0) / 1000;
+    var timeNow = new Date().toLocaleString();
     var sensorID = data.sensorid;
     data.macs.forEach(function (element) {
         db.Routers.findOne({
@@ -93,13 +94,13 @@ var passMacs = function (data) {
                                 multi: true
                             }
                         )
-                        console.log("Updated Entry @" + Date.now().toLocaleString, element.mac);
+                        console.log("Updated Entry @ " + timeNow, element.mac);
                     }
                     else {
                         db.Macs.save(element, function (err, res) {
                             if (err)
                                 console.log('err', err);
-                            console.log("Created Entry @"+ Date.now().toLocaleString, element.mac);
+                            console.log("Created Entry @ "+ timeNow, element.mac);
                         });
                     }
                 })
@@ -229,7 +230,7 @@ function sockets() {
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
-        console.log('Connection closed',HOST +":"+  PORT);
+        console.log('Connection closed ' + HOST + " : " +  PORT, new Date().toLocaleString());
         client.destroy();
         clearTimeout(timeout);
         timeout = setTimeout(clientConnect, 12000);
@@ -237,7 +238,7 @@ function sockets() {
     });
 
     client1.on('close', function () {
-        console.log('Connection closed',HOST +":"+ PORT1);
+        console.log('Connection closed ' + HOST + " : " + PORT1, new Date().toLocaleString());
         client1.destroy();
         clearTimeout(timeout1);
         timeout1 = setTimeout(client1Connect, 12000);

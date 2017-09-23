@@ -9,19 +9,20 @@ var index = require('./routes/index');
 var logs = require('./routes/logs');
 var sensors = require('./routes/sensors');
 var macs = require('./routes/macs');
+var visitors = require('./routes/visitors');
 
 var app = express();
 
 app.use(function (req, res, next) {
 
     // Website you wish to allow to connect
-    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
+    res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3020');
 
     // Request methods you wish to allow
-    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS, PUT, PATCH, DELETE');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
 
     // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,content-type');
+    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type');
 
     // Set to true if you need the website to include cookies in the requests sent
     // to the API (e.g. in case you use sessions)
@@ -47,6 +48,7 @@ app.use('/', index);
 app.use('/logs', logs);
 app.use('/sensors', sensors);
 app.use('/macs', macs);
+app.use('/visitors', visitors);
 
 
 // catch 404 and forward to error handler

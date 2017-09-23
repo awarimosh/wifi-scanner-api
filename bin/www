@@ -8,13 +8,13 @@ var app = require('../app');
 var debug = require('debug')('tcpsockettest:server');
 var http = require('http');
 
-var sockets = require('../sockets');
-sockets();
+// var sockets = require('../sockets');
+// sockets();
 /**
  * Get port from environment and store in Express.
  */
 
-var port = normalizePort(process.env.PORT || '3006');
+var port = normalizePort(process.env.PORT || '3030');
 app.set('port', port);
 
 /**

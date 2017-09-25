@@ -4,7 +4,8 @@ var db = mongojs('mongodb://moshood:mosh1234@ds053972.mlab.com:53972/suretouch',
 var entry = {};
 
 var HOST = '61.6.11.240';
-var HOST2 = '175.138.59.232';
+// var HOST2 = '175.138.59.232';
+var HOST2 = '175.143.246.165';
 
 var PORT1 = 21471;
 var PORT = 21470;
@@ -202,7 +203,7 @@ function sockets() {
 
     client1Connect();
 
-    // client2Connect();
+    client2Connect();
 
     client.on('data', function (data) {
         passData(data);
@@ -212,9 +213,9 @@ function sockets() {
         passData(data);
     });
 
-    // client2.on('data', function (data) {
-    //     passData(data);
-    // });
+    client2.on('data', function (data) {
+        passData(data);
+    });
 
     client.on('error', function (e) {
         console.log(PORT, e.code);
@@ -224,9 +225,9 @@ function sockets() {
         console.log(PORT1, e.code);
     });
 
-    // client2.on('error', function (e) {
-    //     console.log(PORT, e.code);
-    // });
+    client2.on('error', function (e) {
+        console.log(PORT, e.code);
+    });
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
@@ -245,13 +246,13 @@ function sockets() {
         client1Status = false;
     });
 
-    // client2.on('close', function () {
-    //     console.log('Connection closed',HOST2 +":"+ PORT);
-    //     client2.destroy();
-    //     clearTimeout(timeout2);
-    //     timeout2 = setTimeout(client2Connect, 10000);
-    //     client2Status = false;
-    // });
+    client2.on('close', function () {
+        console.log('Connection closed',HOST2 +":"+ PORT);
+        client2.destroy();
+        clearTimeout(timeout2);
+        timeout2 = setTimeout(client2Connect, 10000);
+        client2Status = false;
+    });
 }
 
 module.exports = sockets;

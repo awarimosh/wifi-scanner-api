@@ -250,7 +250,7 @@ function sockets() {
         console.log('Connection closed',HOST2 +":"+ PORT);
         client2.destroy();
         clearTimeout(timeout2);
-        timeout2 = setTimeout(client2Connect, 10000);
+        timeout2 = setTimeout(client2Connect, 12000);
         client2Status = false;
     });
 }

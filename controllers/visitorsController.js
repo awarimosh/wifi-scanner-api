@@ -82,8 +82,9 @@ var getTimestampFromWeek = function (weekNo, year) {
 
 var getMacs = function (dates, sensors) {
     var res = [];
+    var jsonVar = {};
     return new Promise(function (resolve, reject) {
-        sensors.forEach(function (element) {
+        sensors.forEach(function (element, index, array) {
             db.macs().Macs.find({
                 timestamp: {
                     $gte: dates.start,
@@ -94,18 +95,11 @@ var getMacs = function (dates, sensors) {
                 if (err) {
                     reject(err);
                 }
-                if (element !== sensors[sensors.length - 1]) {
-                    var jsonVar = {};
-                    jsonVar.id = element;
-                    jsonVar.data = result;
-                    res.push(jsonVar);
-                }
-                else {
-                    console.log('sensors',sensors);
-                    var jsonVar = {};
-                    jsonVar.id = element;
-                    jsonVar.data = result;
-                    res.push(jsonVar);
+                jsonVar = {};
+                jsonVar.id = element;
+                jsonVar.data = result;
+                res.push(jsonVar);
+                if (res.length === array.length) {
                     resolve(res);
                 }
             })
@@ -114,7 +108,7 @@ var getMacs = function (dates, sensors) {
     })
 }
 
-var formatData = function (data, dates) {    
+var formatData = function (data, dates) {
     var res = [];
     data.forEach(function (element) {
         res.push({

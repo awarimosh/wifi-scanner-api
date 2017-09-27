@@ -3,7 +3,7 @@ var mongojs = require('mongojs');
 var db = mongojs('mongodb://moshood:mosh1234@ds053972.mlab.com:53972/suretouch', ['Entries', 'Macs', 'Routers']);
 var entry = {};
 
-var HOST = '61.6.11.240';
+var HOST = '61.6.4.157';
 // var HOST2 = '175.138.59.232';
 var HOST2 = '175.143.246.165';
 

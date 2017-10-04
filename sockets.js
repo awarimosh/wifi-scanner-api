@@ -12,7 +12,7 @@ var PORT = 21470;
 
 var client = new net.Socket();
 var client1 = new net.Socket();
-var client2 = new net.Socket();
+// var client2 = new net.Socket();
 
 var clientStatus = client1Status = client2Status = false;
 
@@ -46,18 +46,18 @@ var client1Connect = function () {
 
 };
 
-var client2Connect = function () {
-    if (!client2Status) {
-        client2.connect(PORT, HOST2, client1Status = function () {
-            console.log('CONNECTED TO: ' + HOST2 + ':' + PORT, new Date().toLocaleString());
-            return true;
-        });
-    }
-    else {
-        console.log(">>>Refused Connection at "+ PORT, new Date().toLocaleString())
-    }
+// var client2Connect = function () {
+//     if (!client2Status) {
+//         client2.connect(PORT, HOST2, client1Status = function () {
+//             console.log('CONNECTED TO: ' + HOST2 + ':' + PORT, new Date().toLocaleString());
+//             return true;
+//         });
+//     }
+//     else {
+//         console.log(">>>Refused Connection at "+ PORT, new Date().toLocaleString())
+//     }
 
-};
+// };
 
 var passMacs = function (data) {
     today = new Date().setHours(0, 0, 0, 0) / 1000;
@@ -203,7 +203,7 @@ function sockets() {
 
     client1Connect();
 
-    client2Connect();
+    // client2Connect();
 
     client.on('data', function (data) {
         passData(data);
@@ -213,9 +213,9 @@ function sockets() {
         passData(data);
     });
 
-    client2.on('data', function (data) {
-        passData(data);
-    });
+    // client2.on('data', function (data) {
+    //     passData(data);
+    // });
 
     client.on('error', function (e) {
         console.log(PORT, e.code);
@@ -225,9 +225,9 @@ function sockets() {
         console.log(PORT1, e.code);
     });
 
-    client2.on('error', function (e) {
-        console.log(PORT, e.code);
-    });
+    // client2.on('error', function (e) {
+    //     console.log(PORT, e.code);
+    // });
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
@@ -246,13 +246,13 @@ function sockets() {
         client1Status = false;
     });
 
-    client2.on('close', function () {
-        console.log('Connection closed',HOST2 +":"+ PORT);
-        client2.destroy();
-        clearTimeout(timeout2);
-        timeout2 = setTimeout(client2Connect, 12000);
-        client2Status = false;
-    });
+    // client2.on('close', function () {
+    //     console.log('Connection closed',HOST2 +":"+ PORT);
+    //     client2.destroy();
+    //     clearTimeout(timeout2);
+    //     timeout2 = setTimeout(client2Connect, 12000);
+    //     client2Status = false;
+    // });
 }
 
 module.exports = sockets;

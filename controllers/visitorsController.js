@@ -6,7 +6,7 @@ exports.read = function (req, res, next) {
     function resResult(result) {
         res.status(200).json(util.returnResultObject(result));
     }
-
+    
     function resError(err) {
         res.status(500).json(util.returnErrorObject(err));
     }
@@ -16,7 +16,7 @@ exports.read = function (req, res, next) {
     var sensors = req.query.sensors.split(',');
     var thisWeekdates = util.getTimestampFromWeek(week, year);
     var lastWeekdates = util.getTimestampFromWeek(week - 1, year);
-    var nextWeekdates = gutil.etTimestampFromWeek(week + 1, year);
+    var nextWeekdates = util.getTimestampFromWeek(week + 1, year);
     var resData = {};
 
     getMacs(thisWeekdates, sensors)

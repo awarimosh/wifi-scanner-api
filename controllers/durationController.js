@@ -16,7 +16,7 @@ exports.read = function (req, res, next) {
     var sensors = req.query.sensors.split(',');
     var thisWeekdates = util.getTimestampFromWeek(week, year);
     var lastWeekdates = util.getTimestampFromWeek(week - 1, year);
-    var nextWeekdates = gutil.etTimestampFromWeek(week + 1, year);
+    var nextWeekdates = util.getTimestampFromWeek(week + 1, year);
     var resData = {};
 
     getMacs(thisWeekdates, sensors)
@@ -58,7 +58,7 @@ exports.read = function (req, res, next) {
         .catch(resResult);
 };
 
-exports.readUnique = function(req, res, next){
+exports.readUnique = function (req, res, next) {
     function resResult(result) {
         res.status(200).json(util.returnResultObject(result));
     }
@@ -152,7 +152,7 @@ var getUniqueMacs = function (dates, sensors) {
                     $lt: dates.end
                 },
                 sensorID: parseInt(element),
-                unique:true
+                unique: true
             }).skip(0, function (err, result) {
                 if (err) {
                     reject(err);
@@ -171,11 +171,26 @@ var getUniqueMacs = function (dates, sensors) {
 
 var formatData = function (data, dates) {
     var res = [];
+    var duration = 0;
     data.forEach(function (element) {
-        res.push({
-            sensorID: element.id,
-            data: element.data.length
-        })
+        if (element.data[0] != undefined && element.data[0] != null) {
+            element.data.forEach(function (inner, index) {
+                if((inner.timestamp - inner.createdAt) > 0){
+                    duration += (inner.timestamp - inner.createdAt);
+                }
+                if(index == (element.data.length - 1)){
+                    res.push({
+                        sensorID: element.id,
+                        data: Math.round(duration/60000) 
+                    })
+                }
+            }, this);
+        }else{
+            res.push({
+                sensorID: element.id,
+                data: 0 
+            })
+        }
     }, this);
     return {
         res

@@ -10,6 +10,7 @@ var logs = require('./routes/logs');
 var sensors = require('./routes/sensors');
 var macs = require('./routes/macs');
 var visitors = require('./routes/visitors');
+var duration = require('./routes/duration');
 
 var app = express();
 
@@ -56,6 +57,7 @@ app.use('/logs', logs);
 app.use('/sensors', sensors);
 app.use('/macs', macs);
 app.use('/visitors', visitors);
+app.use('/duration', duration);
 
 
 // catch 404 and forward to error handler

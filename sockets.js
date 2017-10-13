@@ -3,7 +3,9 @@ var mongojs = require('mongojs');
 var db = mongojs('mongodb://moshood:mosh1234@ds053972.mlab.com:53972/suretouch', ['Entries', 'Macs', 'Routers']);
 var entry = {};
 
-var HOST = '61.6.4.157';
+// var HOST = '61.6.4.157';
+var HOST = 'sensor2845.ddns.net'
+var HOST1 = 'sensor2844.ddns.net'
 var HOST2 = '175.138.59.249';
 // var HOST2 = '175.143.246.165';
 
@@ -35,8 +37,8 @@ var clientConnect = function () {
 
 var client1Connect = function () {
     if (!client1Status) {
-        client1.connect(PORT1, HOST, client1Status = function () {
-            console.log('CONNECTED TO: ' + HOST + ':' + PORT1, new Date().toLocaleString());
+        client1.connect(PORT1, HOST1, client1Status = function () {
+            console.log('CONNECTED TO: ' + HOST1 + ':' + PORT1, new Date().toLocaleString());
             return true;
         });
     }
@@ -231,7 +233,7 @@ function sockets() {
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
-        console.log('Connection closed ' + HOST + " : " +  PORT, new Date().toLocaleString());
+        console.log('Connection closed ' + HOST1 + " : " +  PORT, new Date().toLocaleString());
         client.destroy();
         clearTimeout(timeout);
         timeout = setTimeout(clientConnect, 12000);

@@ -3,14 +3,12 @@ var mongojs = require('mongojs');
 var db = mongojs('mongodb://moshood:mosh1234@ds053972.mlab.com:53972/suretouch', ['Entries', 'Macs', 'Routers']);
 var entry = {};
 
-// var HOST = '61.6.4.157';
-var HOST = 'sensor2845.ddns.net'
-var HOST1 = 'sensor2844.ddns.net'
-var HOST2 = '175.138.59.249';
-// var HOST2 = '175.143.246.165';
+var HOST = 'sensor2844.ddns.net'
+var HOST1 = '175.138.59.249';
+var HOST2 = '175.143.246.165';
 
+var PORT0 = 21470;
 var PORT1 = 21471;
-var PORT = 21470;
 
 var client = new net.Socket();
 var client1 = new net.Socket();
@@ -23,21 +21,21 @@ var today = new Date().setHours(0, 0, 0, 0) / 1000;
 
 var clientConnect = function () {
     if (!clientStatus) {
-        client.connect(PORT, HOST, clientStatus = function () {
-            console.log('CONNECTED TO: ' + HOST + ':' + PORT, new Date().toLocaleString());
+        client.connect(PORT0, HOST, clientStatus = function () {
+            console.log('CONNECTED TO: ' + HOST + ':' + PORT0, new Date().toLocaleString());
             return true
         });
 
     }
     else {
-        console.log(">>>Refused Connection at " + PORT, new Date().toLocaleString())
+        console.log(">>>Refused Connection at " + PORT0, new Date().toLocaleString())
     }
 
 };
 
 var client1Connect = function () {
     if (!client1Status) {
-        client1.connect(PORT1, HOST1, client1Status = function () {
+        client1.connect(PORT0, HOST1, client1Status = function () {
             console.log('CONNECTED TO: ' + HOST1 + ':' + PORT1, new Date().toLocaleString());
             return true;
         });
@@ -50,13 +48,13 @@ var client1Connect = function () {
 
 var client2Connect = function () {
     if (!client2Status) {
-        client2.connect(PORT, HOST2, client1Status = function () {
-            console.log('CONNECTED TO: ' + HOST2 + ':' + PORT, new Date().toLocaleString());
+        client2.connect(PORT0, HOST2, client1Status = function () {
+            console.log('CONNECTED TO: ' + HOST2 + ':' + PORT0, new Date().toLocaleString());
             return true;
         });
     }
     else {
-        console.log(">>>Refused Connection at "+ PORT, new Date().toLocaleString())
+        console.log(">>>Refused Connection at "+ PORT0, new Date().toLocaleString())
     }
 
 };
@@ -201,11 +199,11 @@ function timeConverter(timestamp) {
 }
 
 function sockets() {
-    clientConnect();
+    // clientConnect();
 
     client1Connect();
 
-    client2Connect();
+    // client2Connect();
 
     client.on('data', function (data) {
         passData(data);
@@ -233,7 +231,7 @@ function sockets() {
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
-        console.log('Connection closed ' + HOST1 + " : " +  PORT, new Date().toLocaleString());
+        console.log('Connection closed ' + HOST + " : " +  PORT0, new Date().toLocaleString());
         client.destroy();
         clearTimeout(timeout);
         timeout = setTimeout(clientConnect, 12000);
@@ -241,7 +239,7 @@ function sockets() {
     });
 
     client1.on('close', function () {
-        console.log('Connection closed ' + HOST + " : " + PORT1, new Date().toLocaleString());
+        console.log('Connection closed ' + HOST1 + " : " + PORT1, new Date().toLocaleString());
         client1.destroy();
         clearTimeout(timeout1);
         timeout1 = setTimeout(client1Connect, 12000);
@@ -249,7 +247,7 @@ function sockets() {
     });
 
     client2.on('close', function () {
-        console.log('Connection closed',HOST2 +":"+ PORT);
+        console.log('Connection closed',HOST2 +":"+ PORT0);
         client2.destroy();
         clearTimeout(timeout2);
         timeout2 = setTimeout(client2Connect, 12000);
@@ -258,7 +256,3 @@ function sockets() {
 }
 
 module.exports = sockets;
-
-
-
-

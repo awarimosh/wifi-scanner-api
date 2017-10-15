@@ -11,6 +11,7 @@ var sensors = require('./routes/sensors');
 var macs = require('./routes/macs');
 var visitors = require('./routes/visitors');
 var duration = require('./routes/duration');
+var user = require('./routes/user');
 
 var app = express();
 
@@ -30,7 +31,7 @@ app.use(function (req, res, next) {
     res.setHeader('Access-Control-Allow-Methods', 'GET, POST');
 
     // Request headers you wish to allow
-    res.setHeader('Access-Control-Allow-Headers', 'X-Requested-With,Content-Type');
+    res.setHeader('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
 
     // Set to true if you need the website to include cookies in the requests sent
     // to the API (e.g. in case you use sessions)
@@ -58,6 +59,7 @@ app.use('/sensors', sensors);
 app.use('/macs', macs);
 app.use('/visitors', visitors);
 app.use('/duration', duration);
+app.use('/user', user);
 
 
 // catch 404 and forward to error handler

@@ -3,12 +3,12 @@ var mongojs = require('mongojs');
 var db = mongojs('mongodb://moshood:mosh1234@ds053972.mlab.com:53972/suretouch', ['Entries', 'Macs', 'Routers']);
 var entry = {};
 
-var HOST = 'sensor2844.ddns.net'
+var HOST0 = '61.6.4.157'
 var HOST1 = '175.138.59.249';
-var HOST2 = '175.143.246.165';
+var HOST2 = 'sensor2845.ddns.net';
 
-var PORT0 = 21470;
-var PORT1 = 21471;
+var PORT0 = '21470'
+var PORT1 = '21471'
 
 var client = new net.Socket();
 var client1 = new net.Socket();
@@ -21,8 +21,8 @@ var today = new Date().setHours(0, 0, 0, 0) / 1000;
 
 var clientConnect = function () {
     if (!clientStatus) {
-        client.connect(PORT0, HOST, clientStatus = function () {
-            console.log('CONNECTED TO: ' + HOST + ':' + PORT0, new Date().toLocaleString());
+        client.connect(PORT0, HOST0, clientStatus = function () {
+            console.log('CONNECTED TO: ' + HOST0 + ':' + PORT0, new Date().toLocaleString());
             return true
         });
 
@@ -41,20 +41,20 @@ var client1Connect = function () {
         });
     }
     else {
-        console.log(">>>Refused Connection at "+ PORT1, new Date().toLocaleString())
+        console.log(">>>Refused Connection at " + PORT1, new Date().toLocaleString())
     }
 
 };
 
 var client2Connect = function () {
     if (!client2Status) {
-        client2.connect(PORT0, HOST2, client1Status = function () {
-            console.log('CONNECTED TO: ' + HOST2 + ':' + PORT0, new Date().toLocaleString());
+        client2.connect(PORT1, HOST2, client1Status = function () {
+            console.log('CONNECTED TO: ' + HOST2 + ':' + PORT1, new Date().toLocaleString());
             return true;
         });
     }
     else {
-        console.log(">>>Refused Connection at "+ PORT0, new Date().toLocaleString())
+        console.log(">>>Refused Connection at " + PORT1, new Date().toLocaleString())
     }
 
 };
@@ -101,7 +101,7 @@ var passMacs = function (data) {
                         db.Macs.save(element, function (err, res) {
                             if (err)
                                 console.log('err', err);
-                            console.log("Created Entry @ "+ timeNow, element.mac);
+                            console.log("Created Entry @ " + timeNow, element.mac);
                         });
                     }
                 })
@@ -112,85 +112,90 @@ var passMacs = function (data) {
 
 var passData = function (data) {
     today = new Date().setHours(0, 0, 0, 0) / 1000;
-    entry = JSON.parse(data);
-    entry.dateTime = Date.now();
-    db.Entries.save(entry, function (err, entry) {
-        if (err)
-            console.log('err', err);
+    try {
+        entry = JSON.parse(data);
+        entry.dateTime = Date.now();
+        db.Entries.save(entry, function (err, entry) {
+            if (err)
+                console.log('err', err);
 
-        var pass = new Promise((resolve, reject) => {
-            var sensorID = entry.sensorid;
-            if (entry.ssid != undefined && entry.ssid.length > 0) {
-                entry.ssid.forEach(function (element, index) {
-                    var mac = {
-                        ssid: element.ssid,
-                        mac: element.mac,
-                        rssi: element.rssi,
-                        timestamp: element.timestamp,
-                        createdAt: element.timestamp
-                    }
-                    db.Routers.update(
-                        {
-                            mac: mac.mac
-                        },
-                        {
-                            $set: {
-                                rssi: mac.rssi,
-                                timestamp: mac.timestamp,
-                                ssid: mac.ssid
+            var pass = new Promise((resolve, reject) => {
+                var sensorID = entry.sensorid;
+                if (entry.ssid != undefined && entry.ssid.length > 0) {
+                    entry.ssid.forEach(function (element, index) {
+                        var mac = {
+                            ssid: element.ssid,
+                            mac: element.mac,
+                            rssi: element.rssi,
+                            timestamp: element.timestamp,
+                            createdAt: element.timestamp
+                        }
+                        db.Routers.update(
+                            {
+                                mac: mac.mac
+                            },
+                            {
+                                $set: {
+                                    rssi: mac.rssi,
+                                    timestamp: mac.timestamp,
+                                    ssid: mac.ssid
+                                }
+                            },
+                            {
+                                upsert: true,
+                                multi: true
                             }
-                        },
-                        {
-                            upsert: true,
-                            multi: true
+                        )
+                        if (index >= entry.ssid.length - 1) {
+                            resolve(entry);
                         }
-                    )
-                    if (index >= entry.ssid.length - 1) {
-                        resolve(entry);
-                    }
 
-                }, this);
-            }
-            else {
-                resolve(entry);
-            }
-        }).then((out1) => {
-            return new Promise((resolve, reject) => {
-                var macs = [];
-                var sensorID = out1.sensorid;
-                var out = {
-                    sensorID: sensorID,
-                    macs: ""
+                    }, this);
                 }
-                out1.data.forEach(function (element, index) {
-                    var mac = {
+                else {
+                    resolve(entry);
+                }
+            }).then((out1) => {
+                return new Promise((resolve, reject) => {
+                    var macs = [];
+                    var sensorID = out1.sensorid;
+                    var out = {
                         sensorID: sensorID,
-                        mac: element.mac,
-                        rssi: element.rssi,
-                        timestamp: element.timestamp,
-                        createdAt: element.timestamp
+                        macs: ""
                     }
-                    db.Macs.findOne({
-                        mac: mac.mac,
-                    }, function (err, doc) {
-                        if (doc == null) {
-                            mac.unique = true;
+                    out1.data.forEach(function (element, index) {
+                        var mac = {
+                            sensorID: sensorID,
+                            mac: element.mac,
+                            rssi: element.rssi,
+                            timestamp: element.timestamp,
+                            createdAt: element.timestamp
                         }
-                        else {
-                            mac.unique = false;
-                        }
-                        macs.push(mac);
-                        if (index >= out1.data.length - 1) {
-                            out.macs = macs;
-                            resolve(out);
-                        }
-                    })
-                }, this);
-            });
-        }).then((out2) => {
-            passMacs(out2)
-        })
-    });
+                        db.Macs.findOne({
+                            mac: mac.mac,
+                        }, function (err, doc) {
+                            if (doc == null) {
+                                mac.unique = true;
+                            }
+                            else {
+                                mac.unique = false;
+                            }
+                            macs.push(mac);
+                            if (index >= out1.data.length - 1) {
+                                out.macs = macs;
+                                resolve(out);
+                            }
+                        })
+                    }, this);
+                });
+            }).then((out2) => {
+                passMacs(out2)
+            })
+        });
+    }
+    catch (err) {
+        console.error(err);
+    }
 }
 
 function timeConverter(timestamp) {
@@ -199,11 +204,11 @@ function timeConverter(timestamp) {
 }
 
 function sockets() {
-    // clientConnect();
+    clientConnect();
 
     client1Connect();
 
-    // client2Connect();
+    client2Connect();
 
     client.on('data', function (data) {
         passData(data);
@@ -218,20 +223,20 @@ function sockets() {
     });
 
     client.on('error', function (e) {
-        console.log(PORT, e.code);
+        console.log(PORT0, e.code);
     });
 
     client1.on('error', function (e) {
-        console.log(PORT1, e.code);
+        console.log(PORT0, e.code);
     });
 
     client2.on('error', function (e) {
-        console.log(PORT, e.code);
+        console.log(PORT1, e.code);
     });
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
-        console.log('Connection closed ' + HOST + " : " +  PORT0, new Date().toLocaleString());
+        console.log('Connection closed ' + HOST0 + " : " + PORT0, new Date().toLocaleString());
         client.destroy();
         clearTimeout(timeout);
         timeout = setTimeout(clientConnect, 12000);
@@ -239,7 +244,7 @@ function sockets() {
     });
 
     client1.on('close', function () {
-        console.log('Connection closed ' + HOST1 + " : " + PORT1, new Date().toLocaleString());
+        console.log('Connection closed ' + HOST1 + " : " + PORT0, new Date().toLocaleString());
         client1.destroy();
         clearTimeout(timeout1);
         timeout1 = setTimeout(client1Connect, 12000);
@@ -247,7 +252,7 @@ function sockets() {
     });
 
     client2.on('close', function () {
-        console.log('Connection closed',HOST2 +":"+ PORT0);
+        console.log('Connection closed', HOST2 + ":" + PORT1);
         client2.destroy();
         clearTimeout(timeout2);
         timeout2 = setTimeout(client2Connect, 12000);

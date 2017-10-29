@@ -36,3 +36,16 @@ exports.getTimestampFromWeek = function (weekNo, year) {
         end: Math.round(currentSun / 1000)
     }
 }
+
+exports.getTimestampFromDate = function (date) {
+    var start = new Date(date);
+    start.setHours(0,0,0,0);
+    
+    var end = new Date(date);
+    end.setHours(23,59,59,999);
+
+    return {
+        start: Math.round(start / 1000),
+        end: Math.round(end / 1000)
+    }
+}

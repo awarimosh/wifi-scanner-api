@@ -175,20 +175,20 @@ var formatData = function (data, dates) {
     data.forEach(function (element) {
         if (element.data[0] != undefined && element.data[0] != null) {
             element.data.forEach(function (inner, index) {
-                if((inner.timestamp - inner.createdAt) > 0){
+                if ((inner.timestamp - inner.createdAt) > 0) {
                     duration += (inner.timestamp - inner.createdAt);
                 }
-                if(index == (element.data.length - 1)){
+                if (index == (element.data.length - 1)) {
                     res.push({
                         sensorID: element.id,
-                        data: Math.round(duration/60000) 
+                        data: Math.round(duration / 60000)
                     })
                 }
             }, this);
-        }else{
+        } else {
             res.push({
                 sensorID: element.id,
-                data: 0 
+                data: 0
             })
         }
     }, this);

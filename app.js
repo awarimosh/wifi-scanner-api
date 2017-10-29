@@ -17,7 +17,7 @@ var app = express();
 
 app.use(function (req, res, next) {
 
-    var allowedOrigins = ['http://localhost:3021', 'http://128.199.154.60:3020', 'http://192.168.0.175:3020'];
+    var allowedOrigins = ['http://localhost:3020', 'http://128.199.154.60:3020', 'http://192.168.0.175:3020'];
     var origin = req.headers.origin;
     // Website you wish to allow to connect
     if (allowedOrigins.indexOf(origin) > -1) {

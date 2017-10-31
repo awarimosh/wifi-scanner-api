@@ -1,5 +1,7 @@
 var net = require('net');
 var mongojs = require('mongojs');
+var cron = require('node-cron');
+var log = require('./helpers/logHelper');
 var db = mongojs('mongodb://moshood:mosh1234@ds053972.mlab.com:53972/suretouch', ['Entries', 'Macs', 'Routers']);
 var entry = {};
 
@@ -18,6 +20,7 @@ var clientStatus = client1Status = client2Status = false;
 
 var timeout, timeout1, timeout2;
 var today = new Date().setHours(0, 0, 0, 0) / 1000;
+var restartCount0 = 0, restartCount1 = 0, restartCount2 = 0;
 
 var clientConnect = function () {
     if (!clientStatus) {
@@ -194,7 +197,7 @@ var passData = function (data) {
         });
     }
     catch (err) {
-        console.error(err);
+        console.error("err");
     }
 }
 
@@ -224,19 +227,24 @@ function sockets() {
 
     client.on('error', function (e) {
         console.log(PORT0, e.code);
+        log.write(restartCount2,e.code,"client2");
     });
 
     client1.on('error', function (e) {
         console.log(PORT0, e.code);
+        log.write(restartCount2,e.code,"client2");
     });
 
     client2.on('error', function (e) {
         console.log(PORT1, e.code);
+        log.write(restartCount2,e.code,"client2");
     });
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
-        console.log('Connection closed ' + HOST0 + " : " + PORT0, new Date().toLocaleString());
+        console.log('Connection closed ' + HOST0 + " : Count : " + restartCount0 + " : " + PORT0, new Date().toLocaleString());
+        log.write(restartCount0,"closed","client0");
+        restartCount0++;
         client.destroy();
         clearTimeout(timeout);
         timeout = setTimeout(clientConnect, 12000);
@@ -244,7 +252,9 @@ function sockets() {
     });
 
     client1.on('close', function () {
-        console.log('Connection closed ' + HOST1 + " : " + PORT0, new Date().toLocaleString());
+        console.log('Connection closed ' + HOST1 + " : Count : " + restartCount1 + " : " + PORT0, new Date().toLocaleString());
+        log.write(restartCount1,"closed","client1");
+        restartCount1++;
         client1.destroy();
         clearTimeout(timeout1);
         timeout1 = setTimeout(client1Connect, 12000);
@@ -252,7 +262,9 @@ function sockets() {
     });
 
     client2.on('close', function () {
-        console.log('Connection closed', HOST2 + ":" + PORT1);
+        console.log('Connection closed', HOST2 + " : Count : " + restartCount2 + ":" + PORT1 ,new Date().toLocaleString());
+        log.write(restartCount2,"closed","client2");
+        restartCount2++;
         client2.destroy();
         clearTimeout(timeout2);
         timeout2 = setTimeout(client2Connect, 12000);

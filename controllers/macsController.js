@@ -25,21 +25,31 @@ exports.readSensor = function (req, res, next) {
 
 exports.readMac = function (req, res, next) {
     var mac = req.params.mac;
-    var result = [];
-    db.macs().Macs.find().forEach(function (err, doc) {
-        if (!doc) {
+    db.macs().Macs.find({
+        mac: mac
+    }).skip(0, function (err, result) {
+        if (err) {
+            console.log(err, typeof (err));
+            reject(err);
+        }
+        if (result) {
             res.json(result);
-            return;
         }
-        if (doc.mac == mac) {
-            result.push(doc);
-        }
-    });
+    })
+    // var result = [];
+    // db.macs().Macs.find().forEach(function (err, doc) {
+    //     if (!doc) {
+    //         res.json(result);
+    //         return;
+    //     }
+    //     if (doc.mac == mac) {
+    //         result.push(doc);
+    //     }
+    // });
 };
 
 exports.readLimit = function (req, res, next) {
     var setlimit = parseInt(req.params.limit);
-    console.log('readLimit', setlimit);
     db.macs().Macs.find({}).sort({ timestamp: -1 }).limit(setlimit).skip(0, function (err, result) {
         if (err) {
             res.send(err);
@@ -51,17 +61,32 @@ exports.readLimit = function (req, res, next) {
 exports.readFilter = function (req, res, next) {
     var startDate = parseInt(req.params.startDate);
     var endDate = parseInt(req.params.endDate);
-    var sensorID = parseInt(req.params.sensorID);
-    var result = [];
-    db.macs().Macs.find().forEach(function (err, doc) {
-        if (!doc) {
+    var sensorID = parseInt(req.params.sensorID);    
+    db.macs().Macs.find({
+        timestamp: {
+            $gte : startDate,
+            $lte: endDate
+        },
+        sensorID: sensorID
+    }).skip(0, function (err, result) {
+        if (err) {
+            console.log(err, typeof (err));
+            reject(err);
+        }
+        if (result) {
             res.json(result);
-            return;
         }
-        if (doc.timestamp >= startDate && doc.timestamp <= endDate && doc.sensorID == sensorID) {
-            result.push(doc);
-        }
-    });
+    })
+    //var result = [];
+    // db.macs().Macs.find().forEach(function (err, doc) {
+    //     if (!doc) {
+    //         res.json(result);
+    //         return;
+    //     }
+    //     if (doc.timestamp >= startDate && doc.timestamp <= endDate && doc.sensorID == sensorID) {
+    //         result.push(doc);
+    //     }
+    // });
 };
 
 exports.readHourChart = function (req, res, next) {

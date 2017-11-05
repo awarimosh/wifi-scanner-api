@@ -4,6 +4,8 @@ var cron = require('node-cron');
 var log = require('./helpers/logHelper');
 var db = mongojs('mongodb://moshood:mosh1234@ds053972.mlab.com:53972/suretouch', ['Entries', 'Macs', 'Routers']);
 var entry = {};
+var dataCache = '';
+var tryCount = 0;
 
 var HOST0 = '61.6.4.157'
 var HOST1 = '175.138.59.249';
@@ -116,7 +118,16 @@ var passMacs = function (data) {
 var passData = function (data) {
     today = new Date().setHours(0, 0, 0, 0) / 1000;
     try {
-        entry = JSON.parse(data);
+        if (dataCache.length > 0) {
+            data = dataCache.concat(data);
+            entry = JSON.parse(data);
+            dataCache = '';
+            tryCount = 0;
+            console.log('pass 1');
+        } else {
+            entry = JSON.parse(data);
+            console.log('pass 0');
+        }
         entry.dateTime = Date.now();
         db.Entries.save(entry, function (err, entry) {
             if (err)
@@ -197,7 +208,16 @@ var passData = function (data) {
         });
     }
     catch (err) {
-        console.error("err");
+        if (tryCount < 5) {
+            dataCache = dataCache.concat(data);
+            tryCount++;
+            console.error('err count : ' + tryCount.toString(), data.toString());
+        }
+        else {
+            console.log('count failed ', tryCount.toString());
+            dataCache = '';
+            tryCount = 0;
+        }
     }
 }
 
@@ -227,49 +247,56 @@ function sockets() {
 
     client.on('error', function (e) {
         console.log(PORT0, e.code);
-        log.write(restartCount2,e.code,"client2");
+        //log.write(restartCount2,e.code,"client2");
     });
 
     client1.on('error', function (e) {
         console.log(PORT0, e.code);
-        log.write(restartCount2,e.code,"client2");
+        //log.write(restartCount2,e.code,"client2");
     });
 
     client2.on('error', function (e) {
         console.log(PORT1, e.code);
-        log.write(restartCount2,e.code,"client2");
+        //log.write(restartCount2,e.code,"client2");
     });
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
-        console.log('Connection closed ' + HOST0 + " : Count : " + restartCount0 + " : " + PORT0, new Date().toLocaleString());
-        log.write(restartCount0,"closed","client0");
-        restartCount0++;
-        client.destroy();
-        clearTimeout(timeout);
-        timeout = setTimeout(clientConnect, 12000);
-        clientStatus = false;
+        if (restartCount0 < 5) {
+            console.log('Connection closed ' + HOST0 + " : Count : " + restartCount0 + " : " + PORT0, new Date().toLocaleString());
+            //log.write(restartCount0,"closed","client0");
+            restartCount0++;
+            client.destroy();
+            clearTimeout(timeout);
+            timeout = setTimeout(clientConnect, 12000);
+            clientStatus = false;
+        }
     });
 
     client1.on('close', function () {
-        console.log('Connection closed ' + HOST1 + " : Count : " + restartCount1 + " : " + PORT0, new Date().toLocaleString());
-        log.write(restartCount1,"closed","client1");
-        restartCount1++;
-        client1.destroy();
-        clearTimeout(timeout1);
-        timeout1 = setTimeout(client1Connect, 12000);
-        client1Status = false;
+        if (restartCount1 < 5) {
+            console.log('Connection closed ' + HOST1 + " : Count : " + restartCount1 + " : " + PORT0, new Date().toLocaleString());
+            //log.write(restartCount1,"closed","client1");
+            restartCount1++;
+            client1.destroy();
+            clearTimeout(timeout1);
+            timeout1 = setTimeout(client1Connect, 12000);
+            client1Status = false;
+        }
     });
 
     client2.on('close', function () {
-        console.log('Connection closed', HOST2 + " : Count : " + restartCount2 + ":" + PORT1 ,new Date().toLocaleString());
-        log.write(restartCount2,"closed","client2");
-        restartCount2++;
-        client2.destroy();
-        clearTimeout(timeout2);
-        timeout2 = setTimeout(client2Connect, 12000);
-        client2Status = false;
+        if (restartCount2 < 5) {
+            console.log('Connection closed', HOST2 + " : Count : " + restartCount2 + ":" + PORT1, new Date().toLocaleString());
+            //log.write(restartCount2,"closed","client2");
+            restartCount2++;
+            client2.destroy();
+            clearTimeout(timeout2);
+            timeout2 = setTimeout(client2Connect, 12000);
+            client2Status = false;
+        }
     });
+
 }
 
 module.exports = sockets;

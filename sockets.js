@@ -212,7 +212,7 @@ var passData = function (data) {
         if (tryCount < 5) {
             dataCache = dataCache.concat(data);
             tryCount++;
-            console.error('err count : ' + tryCount.toString(), data.toString());
+            //console.error('err count : ' + tryCount.toString(), data.toString());
         }
         else {
             console.log('count failed ', tryCount.toString());
@@ -263,7 +263,7 @@ function sockets() {
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
-        if (restartCount0 < 5) {
+        //if (restartCount0 < 5) {
             console.log('Connection closed ' + HOST0 + " : Count : " + restartCount0 + " : " + PORT0, new Date().toLocaleString());
             //log.write(restartCount0,"closed","client0");
             restartCount0++;
@@ -271,11 +271,11 @@ function sockets() {
             clearTimeout(timeout);
             timeout = setTimeout(clientConnect, 12000);
             clientStatus = false;
-        }
+       // }
     });
 
     client1.on('close', function () {
-        if (restartCount1 < 5) {
+        //if (restartCount1 < 5) {
             console.log('Connection closed ' + HOST1 + " : Count : " + restartCount1 + " : " + PORT0, new Date().toLocaleString());
             //log.write(restartCount1,"closed","client1");
             restartCount1++;
@@ -283,11 +283,11 @@ function sockets() {
             clearTimeout(timeout1);
             timeout1 = setTimeout(client1Connect, 12000);
             client1Status = false;
-        }
+        //}
     });
 
     client2.on('close', function () {
-        if (restartCount2 < 5) {
+       // if (restartCount2 < 5) {
             console.log('Connection closed', HOST2 + " : Count : " + restartCount2 + ":" + PORT1, new Date().toLocaleString());
             //log.write(restartCount2,"closed","client2");
             restartCount2++;
@@ -295,7 +295,7 @@ function sockets() {
             clearTimeout(timeout2);
             timeout2 = setTimeout(client2Connect, 12000);
             client2Status = false;
-        }
+      //  }
     });
 
 }

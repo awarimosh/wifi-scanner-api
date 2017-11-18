@@ -1,6 +1,7 @@
 var net = require('net');
 var mongojs = require('mongojs');
 var cron = require('node-cron');
+var nodemailer = require('./helpers/mailHelper');
 var log = require('./helpers/logHelper');
 var db = mongojs('mongodb://moshood:mosh1234@ds053972.mlab.com:53972/suretouch', ['Entries', 'Macs', 'Routers']);
 var entry = {};
@@ -228,11 +229,11 @@ function timeConverter(timestamp) {
 }
 
 function sockets() {
-    clientConnect();
+    //clientConnect();
 
     client1Connect();
 
-    client2Connect();
+    //client2Connect();
 
     client.on('data', function (data) {
         passData(data);
@@ -263,7 +264,7 @@ function sockets() {
 
     // Add a 'close' event handler for the client socket
     client.on('close', function () {
-        //if (restartCount0 < 5) {
+        if (restartCount0 < 5) {
             console.log('Connection closed ' + HOST0 + " : Count : " + restartCount0 + " : " + PORT0, new Date().toLocaleString());
             //log.write(restartCount0,"closed","client0");
             restartCount0++;
@@ -271,11 +272,23 @@ function sockets() {
             clearTimeout(timeout);
             timeout = setTimeout(clientConnect, 12000);
             clientStatus = false;
-       // }
+        }
+        else if (restartCount0 == 10) {
+            var msg = {
+                msg: "Connection Closed",
+                host: HOST0,
+                port: PORT0,
+                restartCount: restartCount0
+            }
+            nodemailer.send_mail('moshood@awaribags.com', HOST0.toString() + ":" + PORT0.toString() + "Connection Closed", JSON.stringify(msg));
+        }
+        else if (restartCount0 >= 50) {
+            restartCount0 = 0;
+        }
     });
 
     client1.on('close', function () {
-        //if (restartCount1 < 5) {
+        if (restartCount1 < 5) {
             console.log('Connection closed ' + HOST1 + " : Count : " + restartCount1 + " : " + PORT0, new Date().toLocaleString());
             //log.write(restartCount1,"closed","client1");
             restartCount1++;
@@ -283,11 +296,23 @@ function sockets() {
             clearTimeout(timeout1);
             timeout1 = setTimeout(client1Connect, 12000);
             client1Status = false;
-        //}
+        }
+        else if (restartCount1 == 10) {
+            var msg = {
+                msg: "Connection Closed",
+                host: HOST1,
+                port: PORT1,
+                restartCount: restartCount1
+            }
+            nodemailer.send_mail('moshood@awaribags.com', HOST1.toString() + ":" + PORT0.toString() + "Connection Closed", JSON.stringify(msg));
+        }
+        else if (restartCount1 >= 50) {
+            restartCount1 = 0;
+        }
     });
 
     client2.on('close', function () {
-       // if (restartCount2 < 5) {
+        if (restartCount2 < 5) {
             console.log('Connection closed', HOST2 + " : Count : " + restartCount2 + ":" + PORT1, new Date().toLocaleString());
             //log.write(restartCount2,"closed","client2");
             restartCount2++;
@@ -295,7 +320,19 @@ function sockets() {
             clearTimeout(timeout2);
             timeout2 = setTimeout(client2Connect, 12000);
             client2Status = false;
-      //  }
+        }
+        else if (restartCount2 == 10) {
+            var msg = {
+                msg: "Connection Closed",
+                host: HOST2,
+                port: PORT2,
+                restartCount: restartCount2
+            }
+            nodemailer.send_mail('moshood@awaribags.com', HOST2.toString() + ":" + PORT2.toString() + "Connection Closed", JSON.stringify(msg));
+        }
+        else if (restartCount2 >= 50) {
+            restartCount2 = 0;
+        }
     });
 
 }

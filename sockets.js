@@ -229,11 +229,11 @@ function timeConverter(timestamp) {
 }
 
 function sockets() {
-    //clientConnect();
+    clientConnect();
 
     client1Connect();
 
-    //client2Connect();
+    client2Connect();
 
     client.on('data', function (data) {
         passData(data);

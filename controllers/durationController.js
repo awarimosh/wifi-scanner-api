@@ -114,6 +114,75 @@ exports.readUnique = function (req, res, next) {
         .catch(resResult);
 }
 
+exports.readWeek = function (req, res, next) {
+    function resResult(result) {
+        res.status(200).json(util.returnResultObject(result));
+    }
+
+    function resError(err) {
+        res.status(500).json(util.returnErrorObject(err));
+    }
+    var week = parseInt(req.query.week);
+    var year = parseInt(req.query.year);
+    var sensors = req.query.sensors.toString().split(',').map(function (item) {
+        return parseInt(item, 10);
+    });
+    var dates = util.getTimestampFromWeek(week, year);
+    db.macs().Macs.find({
+        timestamp: {
+            $gte: dates.start,
+            $lt: dates.end
+        },
+        sensorID: { $in: sensors }
+    }).skip(0, function (err, result) {
+        if (err) {
+            console.log(err, typeof (err));
+            resError(err);
+        }
+        if (result) {
+            var rr = formatResult(sensors, result);
+            if (rr) {
+                resResult(rr);
+            }
+        }
+    })
+}
+
+exports.readWeekUnique = function (req, res, next) {
+    function resResult(result) {
+        res.status(200).json(util.returnResultObject(result));
+    }
+
+    function resError(err) {
+        res.status(500).json(util.returnErrorObject(err));
+    }
+    var week = parseInt(req.query.week);
+    var year = parseInt(req.query.year);
+    var sensors = req.query.sensors.toString().split(',').map(function (item) {
+        return parseInt(item, 10);
+    });
+    var dates = util.getTimestampFromWeek(week, year);
+    db.macs().Macs.find({
+        timestamp: {
+            $gte: dates.start,
+            $lt: dates.end
+        },
+        sensorID: { $in: sensors },
+        unique: true
+    }).skip(0, function (err, result) {
+        if (err) {
+            console.log(err, typeof (err));
+            resError(err);
+        }
+        if (result) {
+            var rr = formatResult(sensors, result);
+            if (rr) {
+                resResult(rr);
+            }
+        }
+    })
+}
+
 var getMacs = function (dates, sensors) {
     var res = [];
     var jsonVar = {};
@@ -195,4 +264,22 @@ var formatData = function (data, dates) {
     return {
         res
     }
+}
+
+var formatResult = function (sensors, data) {
+    var json = {};
+    var array = [];
+    sensors.forEach(function (sensor) {
+        json[sensor] = 0;
+    });
+    data.forEach(function (element){
+        json[element.sensorID] += (element.timestamp - element.createdAt);
+    })
+    sensors.forEach(function (sensor) {
+        var js = {};
+        js.sensorID = sensor;
+        js.data = (json[sensor]/60000).toFixed(2);
+        array.push(js);
+    });
+    return array;
 }

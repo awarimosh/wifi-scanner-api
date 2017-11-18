@@ -35,7 +35,8 @@ exports.login = function (req, res, next) {
                     email : result.email,
                     firstName : result.firstName,
                     lastName : result.lastName,
-                    sensors : result.sensors !== undefined ? result.sensors : "2845"
+                    sensors : result.sensors !== undefined ? result.sensors : "2845",
+                    admin : result.admin
                 }
             })
         }

@@ -40,6 +40,75 @@ exports.read = function (req, res, next) {
     .catch(resResult);
 };
 
+exports.readWeek = function (req,res, next) {   
+    function resResult(result) {
+        res.status(200).json(util.returnResultObject(result));
+    }
+
+    function resError(err) {
+        res.status(500).json(util.returnErrorObject(err));
+    }
+    var week = parseInt(req.query.week);
+    var year = parseInt(req.query.year);
+    var sensors = req.query.sensors.toString().split(',').map(function (item) {
+        return parseInt(item, 10);
+    }); 
+    var dates = util.getTimestampFromWeek(week, year);
+    db.macs().Macs.find({
+        timestamp: {
+            $gte: dates.start,
+            $lt: dates.end
+        },
+        sensorID: { $in: sensors }
+    }).skip(0, function (err, result) {
+        if (err) {
+            console.log(err, typeof (err));
+            resError(err);
+        }
+        if (result) {
+            var rr = formatResult(sensors, result);
+            if (rr) {
+                resResult(rr);
+            }
+        }
+    })
+}
+
+exports.readWeekUnique = function (req,res, next) {   
+    function resResult(result) {
+        res.status(200).json(util.returnResultObject(result));
+    }
+
+    function resError(err) {
+        res.status(500).json(util.returnErrorObject(err));
+    }
+    var week = parseInt(req.query.week);
+    var year = parseInt(req.query.year);
+    var sensors = req.query.sensors.toString().split(',').map(function (item) {
+        return parseInt(item, 10);
+    }); 
+    var dates = util.getTimestampFromWeek(week, year);
+    db.macs().Macs.find({
+        timestamp: {
+            $gte: dates.start,
+            $lt: dates.end
+        },
+        sensorID: { $in: sensors },
+        unique: true
+    }).skip(0, function (err, result) {
+        if (err) {
+            console.log(err, typeof (err));
+            resError(err);
+        }
+        if (result) {
+            var rr = formatResult(sensors, result);
+            if (rr) {
+                resResult(rr);
+            }
+        }
+    })
+}
+
 exports.readUnique = function (req, res, next) {
     function resResult(result) {
         res.status(200).json(util.returnResultObject(result));

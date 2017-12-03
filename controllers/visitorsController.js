@@ -24,23 +24,23 @@ exports.read = function (req, res, next) {
     var resData = {};
 
     getMacs(thisWeekdates, sensors)
-    .then(function (data) {
-        resData.thisweek = data;
-        return getMacs(lastWeekdates, sensors)
-    }, resError)
-    .then(function (data) {
-        resData.lastweek = data;
-        return getMacs(nextWeekdates, sensors)
-    }, resError)
-    .then(function (data) {
-        resData.nextweek = data;
-        return resData
-    }, resError)
-    .then(resResult, resError)
-    .catch(resResult);
+        .then(function (data) {
+            resData.thisweek = data;
+            return getMacsAndStore(lastWeekdates, sensors, week - 1, year, false)
+        }, resError)
+        .then(function (data) {
+            resData.lastweek = data;
+            return getMacs(nextWeekdates, sensors)
+        }, resError)
+        .then(function (data) {
+            resData.nextweek = data;
+            return resData
+        }, resError)
+        .then(resResult, resError)
+        .catch(resResult);
 };
 
-exports.readWeek = function (req,res, next) {   
+exports.readWeek = function (req, res, next) {
     function resResult(result) {
         res.status(200).json(util.returnResultObject(result));
     }
@@ -52,7 +52,7 @@ exports.readWeek = function (req,res, next) {
     var year = parseInt(req.query.year);
     var sensors = req.query.sensors.toString().split(',').map(function (item) {
         return parseInt(item, 10);
-    }); 
+    });
     var dates = util.getTimestampFromWeek(week, year);
     db.macs().Macs.find({
         timestamp: {
@@ -74,7 +74,7 @@ exports.readWeek = function (req,res, next) {
     })
 }
 
-exports.readWeekUnique = function (req,res, next) {   
+exports.readWeekUnique = function (req, res, next) {
     function resResult(result) {
         res.status(200).json(util.returnResultObject(result));
     }
@@ -86,7 +86,7 @@ exports.readWeekUnique = function (req,res, next) {
     var year = parseInt(req.query.year);
     var sensors = req.query.sensors.toString().split(',').map(function (item) {
         return parseInt(item, 10);
-    }); 
+    });
     var dates = util.getTimestampFromWeek(week, year);
     db.macs().Macs.find({
         timestamp: {
@@ -182,9 +182,50 @@ var getMacs = function (dates, sensors) {
                 reject(err);
             }
             if (result) {
-                var rr = formatResult(sensors, result);
-                if (rr) {
-                    resolve(rr)
+                var visitorData = formatResult(sensors, result);
+                if (visitorData) {
+                    resolve(visitorData);
+                }
+            }
+        })
+    })
+}
+
+var getMacsAndStore = function (dates, sensors, week, year, unique) {
+    sensors = sensors.toString().split(',').map(function (item) {
+        return parseInt(item, 10);
+    });
+    return new Promise(function (resolve, reject) {
+        db.macs().Macs.find({
+            timestamp: {
+                $gte: dates.start,
+                $lt: dates.end
+            },
+            sensorID: { $in: sensors }
+        }).skip(0, function (err, result) {
+            if (err) {
+                console.log(err, typeof (err));
+                reject(err);
+            }
+            if (result) {
+                var visitorData = formatResult(sensors, result);
+                if (visitorData) {
+                    resolve(visitorData);
+                    visitorData.forEach(function (data) {
+                        var obj = {};
+                        obj.sensorID = data.sensorID;
+                        obj.unique = unique;
+                        obj.week = week;
+                        obj.year = year;
+                        obj.data = data.data;
+                        obj.type = "visitors";
+                        db.visitors().Data.save(obj, function (err, res) {
+                            if (err) {
+                                console.log('err', err);
+                            }
+                            console.log('res', res);
+                        });
+                    });
                 }
             }
         })

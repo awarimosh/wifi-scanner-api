@@ -274,6 +274,7 @@ var formatResult = function (sensors, data) {
     });
     data.forEach(function (element){
         json[element.sensorID] += (element.timestamp - element.createdAt);
+        json[element.sensorID] += 120000;
     })
     sensors.forEach(function (sensor) {
         var js = {};

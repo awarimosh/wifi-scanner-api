@@ -49,3 +49,16 @@ exports.getTimestampFromDate = function (date) {
         end: Math.round(end / 1000)
     }
 }
+
+exports.getTimestampFromDates = function (startDate, endDate) {
+    var start = new Date(startDate);
+    start.setHours(0,0,0,0);
+    
+    var end = new Date(endDate);
+    end.setHours(23,59,59,999);
+
+    return {
+        start: Math.round(start / 1000),
+        end: Math.round(end / 1000)
+    }
+}

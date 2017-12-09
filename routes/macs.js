@@ -7,6 +7,7 @@ router.get('/mac/:mac', macsController.readMac);
 router.get('/limit/:limit', macsController.readLimit);
 router.get('/filter/:sensorID/startDate/:startDate/endDate/:endDate', macsController.readFilter);
 router.get('/hourChart', macsController.readHourChart);
+router.get('/dayChart', macsController.readDayChart);
 router.get('/', macsController.read);
 
 module.exports = router;

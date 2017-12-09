@@ -9,7 +9,7 @@ var debug = require('debug')('tcpsockettest:server');
 var http = require('http');
 
 var sockets = require('../sockets');
-//sockets();
+sockets();
 /**
  * Get port from environment and store in Express.
  */

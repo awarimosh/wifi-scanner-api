@@ -104,7 +104,7 @@ exports.readHourChart = function (req, res, next) {
         return parseInt(item, 10);
     });
 
-    getHourData(util.getTimestampFromDate(date), sensors)
+    getChartData(util.getTimestampFromDate(date), sensors)
         .then(
         function (data) {
             return new Promise(function (resolve, reject) {
@@ -118,7 +118,37 @@ exports.readHourChart = function (req, res, next) {
         .catch(resResult);
 };
 
-var getHourData = function (date, sensors) {
+exports.readDayChart = function (req, res, next) {
+    function resResult(result) {
+        res.status(200).json(util.returnResultObject(result));
+    }
+
+    function resError(err) {
+        res.status(500).json(util.returnErrorObject(err));
+    }
+    var startDate = req.query.startDate;
+    var endDate = req.query.endDate;
+    var sensors = req.query.sensors.split(',');
+    var resData = {};
+    sensors = sensors.toString().split(',').map(function (item) {
+        return parseInt(item, 10);
+    });
+
+    getChartData(util.getTimestampFromDates(startDate,endDate), sensors)
+        .then(
+        function (data) {
+            return new Promise(function (resolve, reject) {
+                var result = formatDayData(data, util.getTimestampFromDates(startDate,endDate), sensors);
+                if (result === undefined)
+                    reject()
+                resolve(result);
+            });
+        }, resError)
+        .then(resResult, resError)
+        .catch(resResult);
+};
+
+var getChartData = function (date, sensors) {
     return new Promise(function (resolve, reject) {
         db.macs().Macs.find({
             timestamp: {
@@ -150,6 +180,22 @@ var formatHourData = function (data, date, sensors) {
         }, this);
         array.push(json);
         current = current + 3600;
+    }
+    return array;
+}
+
+var formatDayData = function (data, date, sensors) {
+    var json = {}, array = [], current = date.start, days = Math.abs((date.end - date.start)/86400);
+    for (var i = 0; i < days; i++) {
+        json = {}; value = {};
+        json.name = new Date(current*1000).toDateString();
+        sensors.forEach(function (sensor) {
+            json[sensor] = data.filter(function (element) {
+                return ((element.timestamp >= current && element.timestamp < current + 86400) && element.sensorID == sensor.toString());
+            }).length;
+        }, this);
+        array.push(json);
+        current = current + 86400;
     }
     return array;
 }

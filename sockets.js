@@ -8,7 +8,7 @@ var entry = {};
 var dataCache = '';
 var tryCount = 0;
 
-var HOST0 = '61.6.173.48'
+var HOST0 = '61.6.120.217'
 var HOST1 = '175.138.59.249';
 var HOST2 = 'sensor2845.ddns.net';
 // var HOST2 = '61.6.4.157';
